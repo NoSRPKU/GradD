@@ -50,9 +50,27 @@ class RBM(object):
             ), name='vbias', borrow=True)
         self.bias_visible = bias_visible
 
-        if not sample_val:
-            sample_val = T.matrix('sample')
-        self.sample_val = sample_val
-        
+    def sample_h_given_v(self, v):
+        pre_sigmoid_h = T.dot(v, self.W) + self.bias_hidden
+        h = T.nnet.sigmoid(pre_sigmoid_h)
+        sample_h = self.theano_random_number_generator.binomial(size=h.shape, p=h, dtype=theano.config.floatX)
+        return pre_sigmoid_h, h, sample_h
+
+    def sample_v_given_h(self, h):
+        pre_sigmoid_v = T.dot(v, self.W.T) + self.bias_visible
+        v = T.nnet.sigmoid(pre_sigmoid_v)
+        sample_v = self.theano_random_number_generator.binomial(size=v.shape, p=v, dtype=theano.config.floatX)
+        return pre_sigmoid_v, v, sample_v
+
+    def train(self, sample, epoch, learning_rate, k):
+        dW, dbias_visible, dbias_hidden = self.cdk(sample, k)
+
+    def cdk(self, sample, k):
+        for samp in sample:
+            v = samp
+            for r in range(0, k):
+                pass
+            pass
+
 if __name__ == "__main__":
     rbm = RBM()
