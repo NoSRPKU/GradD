@@ -39,38 +39,41 @@ class RBM(object):
         self.W = W
 
         if not bias_hidden:
-            bias_hidden = theano.shared(value=np.zeros(
-                n_hidden, dtype=theano.config.floatX
-            ), name='hbias', borrow=True)
+            bias_hidden = theano.shared(value=np.zeros(n_hidden, dtype=theano.config.floatX), name='hbias', borrow=True)
         self.bias_hidden = bias_hidden
 
         if not bias_visible:
-            bias_visible = theano.shared(value=np.zeros(
-                n_visible, dtype=theano.config.floatX
-            ), name='vbias', borrow=True)
+            bias_visible = theano.shared(value=np.zeros(n_visible, dtype=theano.config.floatX), name='vbias', borrow=True)
         self.bias_visible = bias_visible
 
     def sample_h_given_v(self, v):
         pre_sigmoid_h = T.dot(v, self.W) + self.bias_hidden
         h = T.nnet.sigmoid(pre_sigmoid_h)
         sample_h = self.theano_random_number_generator.binomial(size=h.shape, p=h, dtype=theano.config.floatX)
-        return pre_sigmoid_h, h, sample_h
+        return sample_h
 
     def sample_v_given_h(self, h):
-        pre_sigmoid_v = T.dot(v, self.W.T) + self.bias_visible
+        pre_sigmoid_v = T.dot(h, self.W.T) + self.bias_visible
         v = T.nnet.sigmoid(pre_sigmoid_v)
         sample_v = self.theano_random_number_generator.binomial(size=v.shape, p=v, dtype=theano.config.floatX)
-        return pre_sigmoid_v, v, sample_v
+        return sample_v
 
     def train(self, sample, epoch, learning_rate, k):
         dW, dbias_visible, dbias_hidden = self.cdk(sample, k)
 
     def cdk(self, sample, k):
-        for samp in sample:
-            v = samp
+        dW = theano.shared(value=np.zeros((self.n_visible, self.n_hidden), dtype=theano.config.floatX), name='dW', borrow=True)
+        d_bias_hidden = theano.shared(value=np.zeros(self.n_hidden, dtype=theano.config.floatX), name='hbias', borrow=True)
+        bias_visible = theano.shared(value=np.zeros(self.n_visible, dtype=theano.config.floatX), name='vbias', borrow=True)
+        for tmp in sample:
+            v = tmp
             for r in range(0, k):
-                pass
+                h = self.sample_h_given_v(v)
+                v = self.sample_v_given_h(h)
             pass
+        for i in range(0, self.n_hidden):
+            for j in range(0, self.n_visible):
+                
 
 if __name__ == "__main__":
     rbm = RBM()
